@@ -1,0 +1,129 @@
+<html lang="en" >
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Angular Material style sheet -->
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css">
+</head>
+<body ng-app="BlankApp" ng-cloak ng-controller="test">
+  <!--
+    Your HTML content here
+  -->  
+
+
+
+  <table cellpadding="0" cellspacing="0">
+     <thead>
+          <tr>
+             <th></th>
+            <th ng-repeat="(k,v) in table.header">{{v.name}}</th>
+          </tr>
+     </thead>
+      <tbody>
+          <tr ng-repeat="(k,v) in table.body">
+               <td>{{k+1}}</td><td ng-repeat="(a,b) in v track by $index" ng-click="change(k,$index,table,$event)"> {{b}}</td>
+          </tr>
+      </tbody>
+  </table>
+
+
+
+  <!-- Angular Material requires Angular.js Libraries -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
+  <script type="text/javascript">
+
+    angular.module('BlankApp', ['ngMaterial', 'ngMessages'])
+        .controller('test',function ($scope,$http, $mdDialog) {
+              $scope.table;
+              $http.get("/demo.php?list").then(function (response) {
+                    $scope.table=response.data;
+			  });
+
+              $scope.change = function(x,y,table, ev){
+				  $mdDialog.show({
+
+					  templateUrl: 'formula.html',
+					  parent: angular.element(document.body),
+					  targetEvent: ev,
+					  clickOutsideToClose:true,
+					  fullscreen: true,
+					  controller: function($scope, $http){
+					  	$scope.x=x;
+					  	$scope.y=y;
+					  	$scope.formula='';
+
+                        $scope.position=table.header[y].name+(x+1);
+                        $scope.hide = function(){
+                            $mdDialog.hide();
+                        }
+                          $scope.save = function(){
+                        	    console.log($scope.formula);
+                                $http.post("/demo.php?value",{x:x,y:y}).then(function(result){
+                                	  console.log(result);
+                                });
+                          }
+                      }
+				  })
+                  .then(function(answer) {
+
+                  }, function() {
+
+                  });
+
+              }
+        });
+  </script>
+  <style>
+      table{
+          width: 600px;
+          padding: 0;
+          margin:0px;
+      }
+      table td, table th {
+          border:1px solid black;
+      }
+  </style>
+
+  <script id="formula.html" type="text/ng-template">
+      <md-dialog aria-label="Mango (Fruit)">
+          <form ng-cloak>
+              <md-toolbar>
+                  <div class="md-toolbar-tools">
+                      <h2>Mango (Fruit)</h2>
+                      <span flex></span>
+                  </div>
+              </md-toolbar>
+
+              <md-dialog-content style="width: 600px;">
+                  <div class="md-dialog-content">
+                      <div>
+                          x = {{x}} &nbsp; y = {{y}} &nbsp; position= {{position}}
+                      </div>
+                      <md-input-container class="md-block">
+                          <label>formula</label>
+                          <textarea ng-model="formula" md-maxlength="150" rows="5" md-select-on-focus></textarea>
+                      </md-input-container>
+
+                  </div>
+              </md-dialog-content>
+
+              <md-dialog-actions layout="row">
+
+                  <span flex></span>
+                  <md-button ng-click="hide()">
+                     close
+                  </md-button>
+                  <md-button ng-click="save()">
+                      save
+                  </md-button>
+              </md-dialog-actions>
+          </form>
+      </md-dialog>
+  </script>
+
+</body>
+</html>
